@@ -28,15 +28,14 @@ class   EventModel
         this.#title     =   _title;
         this.#date      =   _date;
         this.#maxSeats  =   _maxSeats;
-        if (!EventModel.addEvent(this.#id, this.#title, this.#date, this.#maxSeats))
-            // Nel caso la creazione dell'evento non sia andata a buon fine si solleva un'eccezione che verrà poi intercettata dall'apposito middleware
-            throw new Error("Evento rigettato!");
+        EventModel.addEvent(this.#id, this.#title, this.#date, this.#maxSeats);
+
     }
 
     // Metodi private
     #setUniqueId()
     {
-        let allEvents = EventModel.getAllEvents();
+        const allEvents = EventModel.getAllEvents();
         const allIds = allEvents.map( (event) => event.id );
         this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
         console.log("ID: ", this.#id);
@@ -102,7 +101,13 @@ class   EventModel
 
     static  getEvent(eventId)
     {
-
+        const allEvents = EventModel.getAllEvents();
+        if (allEvents.length == 0)
+            throw new Error("Nessun evento esistente!");
+        const eventIndex = allEvents.findIndex( eventChecked => eventChecked.id == eventId);
+        if (eventIndex < 0)
+            throw new Error("Evento non presente nel DB!");
+        return allEvents[eventIndex];
     }
 
     static  addEvent(_id, _title, _date, _maxSeats)
@@ -121,9 +126,8 @@ class   EventModel
         }
         catch (error)
         {
-            return false;
+            throw new Error("Evento rigettato!");
         }
-        return true;
     }
 }
 

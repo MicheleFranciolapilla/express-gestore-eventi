@@ -49,12 +49,14 @@ class   EventModel
         // Se il file è corrotto o inesistente lo si ricrea/crea come file vuoto
         if ((errorOnDB == 1) || (errorOnDB == 2))
         {
+            console.log("Se il file è corrotto o inesistente lo si ricrea/crea come file vuoto");
             fileSystem.writeFileSync(eventsDBPath, "");
             EventModel.someError = 0;
             allEvents = [];
         }
         const allIds = allEvents.map( (event) => event.id );
         this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
+        console.log("ID: ", this.#id);
     }
 
     // Metodi statici
@@ -111,9 +113,6 @@ class   EventModel
                         {
                             console.log("jsonfiledata non è un array.... ");
                             jsonFileData = EventModel.fromObjToArray(jsonFileData);
-                            // const simpleObj = jsonFileData;
-                            // jsonFileData = [];
-                            // jsonFileData = Array.from(jsonFileData);
                             console.log("jsonfiledata ora è un array.... ", jsonFileData);
                         }
                         EventModel.someError = 0;
@@ -136,9 +135,20 @@ class   EventModel
                                     "date"      :   _date,
                                     "maxSeats"  :   _maxSeats
                                 };
+        let allEvents = EventModel.getAllEvents();
+        const errorOnDB = EventModel.someError;
+        // Se il file è corrotto o inesistente lo si ricrea/crea come file vuoto
+        if ((errorOnDB == 1) || (errorOnDB == 2))
+        {
+            console.log("Se  il file è corrotto o inesistente lo si ricrea/crea come file vuoto");
+            fileSystem.writeFileSync(eventsDBPath, "");
+            EventModel.someError = 0;
+            allEvents = [];
+        }
+        allEvents.push(eventToAdd);
         try
         {
-            fileSystem.writeFileSync(eventsDBPath, JSON.stringify(eventToAdd));
+            fileSystem.writeFileSync(eventsDBPath, JSON.stringify(allEvents));
         }
         catch (error)
         {

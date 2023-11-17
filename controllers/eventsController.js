@@ -46,6 +46,42 @@ function index(request, response)
                     });
 }
 
+function show(request, response)
+{
+    if (eventModel.eventsInDB() == 0)
+        throw new Error("Nessun evento esistente!");
+    const allEvents     = eventModel.getAllEvents();
+    const eventIndex    = allEvents.findIndex( singleEvent  =>  singleEvent.id == request.params.event);
+    if (eventIndex < 0)
+        throw new Error("Evento non presente nel DB!");
+    const actualEvent   = allEvents[eventIndex];
+    response.format({
+                        html:       ()  =>
+                            {
+                                response.type("html");
+                                let output = [];
+                                for (let key in actualEvent)
+                                    if (actualEvent.hasOwnProperty(key))
+                                    {
+                                        let tagOpen     =   '<h1>';
+                                        let tagClose    =   "</h1>"; 
+                                        if (!["id", "title"].includes(key))
+                                        {
+                                            tagOpen     =   "<h3>";
+                                            tagClose    =   "</h3>";
+                                        }
+                                        output.push(`${tagOpen}${key}:   ${actualEvent[key]}${tagClose}`);
+                                    }
+                                response.send(output.join(""));
+                            },
+                        default:    ()  =>
+                            {
+                                response.json(actualEvent);
+                            }
+                    });
+
+}
+
 function store(request, response)
 {
     response.send("Sono il controller events/store (post)");
@@ -56,4 +92,4 @@ function update(request, response)
     response.send(`Sono il controller events/update (put) con evento: ${request.params.event}`);
 }
 
-module.exports  =   { index, store, update };
+module.exports  =   { index, show, store, update };

@@ -20,15 +20,15 @@ class   EventModel
 
     // Costruttore e metodi
 
-    // Per il momento stabiliamo che gli unici attributi indispensabili per la creazione di un nuovo evento siano il titolo, la data ed il numero di posti a sedere
-    // L'id lo genereremo automaticamente di modo che sia univoco, mentre la descrizione dell'evento verrà settata in seguito (opzionale)
-    constructor(_title, _date, _maxSeats)
+    // Si inseriscono tutti i campi richiesti, ad eccezione dell'id che verrà determinato dinamicamente per garantirne l'unicità
+    constructor(_title, _description = "", _date, _maxSeats)
     {
         this.#setUniqueId();
-        this.#title     =   _title;
-        this.#date      =   _date;
-        this.#maxSeats  =   _maxSeats;
-        EventModel.addEvent(this.#id, this.#title, this.#date, this.#maxSeats);
+        this.#title         =   _title;
+        this.#description   =   _description;
+        this.#date          =   _date;
+        this.#maxSeats      =   _maxSeats;
+        EventModel.addEvent(this.#id, this.#title, this.#description, this.#date, this.#maxSeats);
 
     }
 
@@ -110,13 +110,15 @@ class   EventModel
         return allEvents[eventIndex];
     }
 
-    static  addEvent(_id, _title, _date, _maxSeats)
+    static  addEvent(_id, _title, _description, _date, _maxSeats)
     {
         const   eventToAdd  =   {
-                                    "id"        :   _id,
-                                    "title"     :   _title,
-                                    "date"      :   _date,
-                                    "maxSeats"  :   _maxSeats
+                                    "id"            :   _id,
+                                    "title"         :   _title,
+                                    ...( _description !== "" && { "description": _description }),
+                                    // "description"   :   _description,
+                                    "date"          :   _date,
+                                    "maxSeats"      :   _maxSeats
                                 };
         let allEvents = EventModel.getAllEvents();
         allEvents.push(eventToAdd);
@@ -128,6 +130,11 @@ class   EventModel
         {
             throw new Error("Evento rigettato!");
         }
+    }
+
+    static  eventsInDB()
+    {
+        return EventModel.getAllEvents().length;
     }
 }
 

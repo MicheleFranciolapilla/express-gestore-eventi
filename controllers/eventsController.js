@@ -1,5 +1,5 @@
 // Importazione modello
-const { json } = require("express");
+const   express     =   require("express");
 const   eventModel  =   require("../models/EventModel");
 
 function index(request, response)

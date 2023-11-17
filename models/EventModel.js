@@ -18,12 +18,6 @@ class   EventModel
     #date;
     #maxSeats;
 
-    // Proprietà statiche
-
-    static  eventsInDB  =   0; 
-    static  someError   =   0;
-    static  errors      =   ["Nessun errore", "File inesistente", "Formato file errato", "Evento rigettato"];
-
     // Costruttore e metodi
 
     // Per il momento stabiliamo che gli unici attributi indispensabili per la creazione di un nuovo evento siano il titolo, la data ed il numero di posti a sedere
@@ -34,26 +28,15 @@ class   EventModel
         this.#title     =   _title;
         this.#date      =   _date;
         this.#maxSeats  =   _maxSeats;
-        if (EventModel.addEvent(this.#id, this.#title, this.#date, this.#maxSeats))
-            EventModel.eventsInDB++;
-        else
+        if (!EventModel.addEvent(this.#id, this.#title, this.#date, this.#maxSeats))
             // Nel caso la creazione dell'evento non sia andata a buon fine si solleva un'eccezione che verrà poi intercettata dall'apposito middleware
-            throw new Error(EventModel.errors[EventModel.someError]);
+            throw new Error("Evento rigettato!");
     }
 
     // Metodi private
     #setUniqueId()
     {
         let allEvents = EventModel.getAllEvents();
-        const errorOnDB = EventModel.someError;
-        // Se il file è corrotto o inesistente lo si ricrea/crea come file vuoto
-        if ((errorOnDB == 1) || (errorOnDB == 2))
-        {
-            console.log("Se il file è corrotto o inesistente lo si ricrea/crea come file vuoto");
-            fileSystem.writeFileSync(eventsDBPath, "");
-            EventModel.someError = 0;
-            allEvents = [];
-        }
         const allIds = allEvents.map( (event) => event.id );
         this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
         console.log("ID: ", this.#id);
@@ -77,10 +60,9 @@ class   EventModel
             {
                 if (!EventModel.checkDBExistance())
                 {
-                    console.log("file non esiste");
-                    EventModel.someError = 1;
-                    console.log("Errore: ", EventModel.errors[EventModel.someError]);
-                    return null;
+                    console.log("file non esiste..... lo si crea!");
+                    fileSystem.writeFileSync(eventsDBPath, "");
+                    return [];
                 }
                 else
                 {
@@ -89,8 +71,6 @@ class   EventModel
                     if (fileContent == "")
                     {
                         console.log("file senza contenuto.....restituisco array vuoto");
-                        EventModel.someError = 0;
-                        console.log("Errore: ", EventModel.errors[EventModel.someError]);
                         return [];
                     }
                     else
@@ -104,19 +84,17 @@ class   EventModel
                         }
                         catch(error)
                         {
-                            EventModel.someError = 2;
-                            console.log("Errore: ", EventModel.errors[EventModel.someError]);
-                            return null;
+                            console.log("file corrotto..... lo si ricrea!");
+                            fileSystem.writeFileSync(eventsDBPath, "");
+                            return [];
                         }
                         console.log("Nessun errore nel parsing");
                         if (!Array.isArray(jsonFileData))
                         {
                             console.log("jsonfiledata non è un array.... ");
                             jsonFileData = EventModel.fromObjToArray(jsonFileData);
-                            console.log("jsonfiledata ora è un array.... ", jsonFileData);
+                            console.log("jsonfiledata  ora è un array.... ", jsonFileData);
                         }
-                        EventModel.someError = 0;
-                        console.log("Errore: ", EventModel.errors[EventModel.someError]);
                         return jsonFileData;
                     }
                 }
@@ -136,15 +114,6 @@ class   EventModel
                                     "maxSeats"  :   _maxSeats
                                 };
         let allEvents = EventModel.getAllEvents();
-        const errorOnDB = EventModel.someError;
-        // Se il file è corrotto o inesistente lo si ricrea/crea come file vuoto
-        if ((errorOnDB == 1) || (errorOnDB == 2))
-        {
-            console.log("Se  il file è corrotto o inesistente lo si ricrea/crea come file vuoto");
-            fileSystem.writeFileSync(eventsDBPath, "");
-            EventModel.someError = 0;
-            allEvents = [];
-        }
         allEvents.push(eventToAdd);
         try
         {
@@ -152,12 +121,8 @@ class   EventModel
         }
         catch (error)
         {
-            EventModel.someError = 3;
-            console.log("Errore: ", EventModel.errors[EventModel.someError]);
             return false;
         }
-        EventModel.someError = 0;
-        console.log("Errore: ", EventModel.errors[EventModel.someError]);
         return true;
     }
 }

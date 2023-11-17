@@ -23,8 +23,8 @@ const   server              =   express();
 
         server.listen( port, () =>
         {
-            const event = require("./models/event");
-            const myevent = event.getAllEvents();
-            console.log(myevent);
+            const EventModel = require("./models/EventModel");
+            const myEventModel = new EventModel("titolo", new Date(), "posti");
+            console.log(myEventModel);
             console.log(`Server in esecuzione su ${process.env.HOST}${port}`);
         });

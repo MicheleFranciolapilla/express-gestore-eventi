@@ -1,6 +1,7 @@
 // Importazione modello
-const   express     =   require("express");
-const   EventModel  =   require("../models/EventModel");
+const   express         =   require("express");
+const   EventModel      =   require("../models/EventModel");
+const   allowedFilters  =   ["date_exact", "date_before", "date_after"];
 
 function showAllEventsInstances()
 {
@@ -20,8 +21,23 @@ function showAllEventsInstances()
 
 function index(request, response)
 {
-    const   eventsInDB  = EventModel.eventsInDB();
-    const   allEvents   = EventModel.getAllEvents();
+    // Si verifica l'eventuale presenza di query strings nella rotta, a condizione che ci siano eventi nel db
+    const   eventsInDB  =   EventModel.eventsInDB();
+    if (eventsInDB != 0)
+    {
+        var queries         =   Object.keys(request.query);
+        // Si salvano in un array tutte le queries valide, per eventuali usi futuri; al momento si prende in considerazione solo l'ultima di esse
+        var validQueries    =   queries.filter(queryStr =>  
+            {
+                if (allowedFilters.includes(queryStr))
+                {
+                    if (EventModel.isValidDate(request.query[queryStr]))
+                        return true;
+                }
+            });
+        console.log("Queries valide: ", validQueries);
+        var allEvents   =   EventModel.getAllEvents();
+    }
     showAllEventsInstances();
     response.format({
                         html:       ()  =>

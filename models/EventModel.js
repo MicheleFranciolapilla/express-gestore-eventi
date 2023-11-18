@@ -283,6 +283,12 @@ class   EventModel
                 });
         }
     }
+
+    static  isValidDate(dateToCheck)
+    {
+        const date = new Date(dateToCheck);
+        return !isNaN(date.getTime());
+    }
 }
 
 module.exports = EventModel;

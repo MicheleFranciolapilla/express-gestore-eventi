@@ -137,15 +137,31 @@ function update(request, response)
 {
     if (eventModel.eventsInDB() == 0)
         throw new Error("Nessun evento esistente!");
-    const   actualEvent                                 =   eventModel.getEvent(request.params.event);
+    let     eventBeforeModify                           =   eventModel.getEvent(request.params.event);
     const   {title, description, eventDate, maxSeats}   =   request.body;
     const   modifiersObj                                =   {title, description, eventDate, maxSeats};
-    let     modifiersBool                               =   {};
-    for (let key in modifiersObj)
-        modifiersBool[key] = modifiersObj[key] ? true : false;
+    // let     modifiersBool                               =   {};
+    // for (let key in modifiersObj)
+    //     modifiersBool[key] = modifiersObj[key] ? true : false;
+    eventModel.modifyEvent(request.params.event, modifiersObj);
+    let     eventAfterModify                            =   eventModel.getEvent(request.params.event);
+    delete eventBeforeModify.id;
+    delete eventAfterModify.id;
+    response.format({
+                        html:       ()  =>
+                            {
 
+                            },
+                        default:    ()  =>
+                            {
 
-    response.send(`Sono il controller events/update (put) con evento: ${request.params.event}`);
+                                response.json(  {
+                                                    "Evento modificato con successo"    :   `Id evento: ${request.params.event}`,
+                                                    "Evento prima della modifica"       :   eventBeforeModify,
+                                                    "Evento dopo la modifica"           :   eventAfterModify
+                                                });
+                            }
+                    });
 }
 
 module.exports  =   { index, show, store, update };

@@ -185,7 +185,7 @@ class   EventModel
                 return allEvents[eventIndex];
             };
 
-    static  modifyEvent(eventId, newEventObj)
+    static  modifyEvent(eventId, modifiersObj)
             {
                 // Si recupera l'intero contenuto del file json e, successivamente l'indice dell'evento da modificare
                 let allEvents = EventModel.getAllEvents();
@@ -199,10 +199,10 @@ class   EventModel
                 if (eventInstance == undefined)  
                     throw new Error("Impossibile recuperare l'istanza relativa all'evento!");
                 // Se non si è verificato nessun errore nel recupero dei dati da file e dell'istanza, si procede con la modifica dei dati nel file
-                for (let key in newEventObj)
+                for (let key in modifiersObj)
                 {
                     // Per i dati nel file non si controlla preventivamente che la chiave esista poichè potrebbe anche trattarsi di una proprietà secondaria, non ancora settata. 
-                    allEvents[eventIndex][key] = newEventObj[key];
+                    allEvents[eventIndex][key] = modifiersObj[key];
                 }
                 // Si tenta il salvataggio del file con i nuovi dati
                 try
@@ -215,10 +215,10 @@ class   EventModel
                     throw new Error("Modifica rigettata e istanza invariata!");
                 }
                 // Se invece tutto procede regolarmente, allora anche l'istanza viene aggiornata ma, a differenza di quanto fatto nell'aggiornamento dei dati del file, in questo caso si verifica che le chiavi siano presenti nell'istanza stessa
-                for (let key in newEventObj)
+                for (let key in modifiersObj)
                 {
                     if (eventInstance.hasOwnProperty(key))
-                        eventInstance[key] = newEventObj[key];
+                        eventInstance[key] = modifiersObj[key];
                 }
             };
 

@@ -111,6 +111,25 @@ function store(request, response)
                                 flexBox     =   flexBox.replace("@", leftBox.concat(rightBox));
                                 output.push(flexBox);
                                 response.send(output.join(""));
+                            },
+                        default:    ()  =>
+                            {
+                                let sent    =   {};
+                                let saved   =   {};
+                                for (let key in newEventConfirmed)
+                                {
+                                    if (key != "id")
+                                    {
+                                        sent[key]   =    request.body[key];
+                                        saved[key]  =    newEventConfirmed[key];
+                                    }
+                                }
+                                response.json(  {
+                                                    "Esito salvataggio evento"  :   "Evento registrato con successo",
+                                                    "Id generato per l'evento"  :   newEventId,
+                                                    "Dati inviati:"             :   sent,
+                                                    "Dati salvati:"             :   saved
+                                                });
                             }
                     });
 }

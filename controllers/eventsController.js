@@ -1,7 +1,6 @@
 // Importazione modello
 const   express     =   require("express");
 const   eventModel  =   require("../models/EventModel");
-const EventModel = require("../models/EventModel");
 
 function index(request, response)
 {
@@ -82,9 +81,9 @@ function show(request, response)
 function store(request, response)
 {
     const {title, description, date, maxSeats}  =   request.body;
-    const newEvent                              =   new EventModel(title, description, date, maxSeats);
-    const newEventId                            =   EventModel.getLastGeneratedId();
-    const newEventConfirmed                     =   EventModel.getEvent(newEventId);
+    const newEvent                              =   new eventModel(title, description, date, maxSeats);
+    const newEventId                            =   eventModel.getLastGeneratedId();
+    const newEventConfirmed                     =   eventModel.getEvent(newEventId);
     response.format({
                         html:       ()  =>
                             {
@@ -136,6 +135,14 @@ function store(request, response)
 
 function update(request, response)
 {
+    if (eventModel.eventsInDB() == 0)
+        throw new Error("Nessun evento esistente!");
+    const   actualEvent                             =   eventModel.getEvent(request.params.event);
+    const   {title, description, date, maxSeats}    =   request.body;
+    const   modifiersObj                            =   {title, description, date, maxSeats};
+    let     modifiersBool                           =   {};
+    for (let key in modifiersObj)
+        modifiersBool[key] = modifiersObj[key] ? true : false;
     response.send(`Sono il controller events/update (put) con evento: ${request.params.event}`);
 }
 

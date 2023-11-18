@@ -1,7 +1,7 @@
 // Importazione modello
 const   express         =   require("express");
 const   EventModel      =   require("../models/EventModel");
-const   allowedFilters  =   ["date_exact", "date_before", "date_after"];
+const   allowedFilters  =   ["date_before", "date_after"];
 
 function showAllEventsInstances()
 {
@@ -36,7 +36,17 @@ function index(request, response)
                 }
             });
         console.log("Queries valide: ", validQueries);
-        var allEvents   =   EventModel.getAllEvents();
+        var lastValidQuery  =   validQueries.length != 0    ?   validQueries[validQueries.length - 1]   :   null;
+        var allEvents       =   EventModel.getAllEvents();
+        if (lastValidQuery)
+        {
+            var dateTime        =   request.query[lastValidQuery];
+            var filteredEvents  =   allEvents.filter( singleEvent   =>
+                {
+
+                });
+            console.log("Query ok: ", lastValidQuery);
+        }
     }
     showAllEventsInstances();
     response.format({

@@ -34,13 +34,44 @@ class   EventModel
         this.#eventDate     =   _eventDate;
         this.#maxSeats      =   _maxSeats;
         // Se l'aggiunta di un nuovo evento non va a buon fine si genera un errore, altrimenti si salva l'istanza e si aggiorna la memoria relativa all'ultimo id generato
-        if (!EventModel.addEvent(this.#id, this.#title, this.#description, this.#eventDate, this.#maxSeats))
+        if (!this.#addEvent())
             throw new Error("Evento rigettato!");
         else
         {
             EventModel.lastGeneratedId = this.#id;
             EventModel.eventInstances.push(this);
         }
+    };
+    
+    // Metodi private
+    #setUniqueId()
+    {
+        const allEvents = EventModel.getAllEvents();
+        const allIds = allEvents.map( (event) => event.id );
+        this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
+        console.log("ID: ", this.#id);
+    };
+
+    #addEvent()
+    {
+        const   eventToAdd  =   {
+                                    "id"            :   this.#id,
+                                    "title"         :   this.#title,
+                                    ...( this.#description !== "" && { "description": this.#description }),
+                                    "eventDate"     :   this.#eventDate,
+                                    "maxSeats"      :   this.#maxSeats
+                                };
+        let allEvents = EventModel.getAllEvents();
+        allEvents.push(eventToAdd);
+        try
+        {
+            fileSystem.writeFileSync(eventsDBPath, JSON.stringify(allEvents));
+        }
+        catch (error)
+        {
+            return false;
+        }
+        return true;
     };
 
     // Setters
@@ -83,15 +114,6 @@ class   EventModel
     get maxSeats()
     {
         return this.#maxSeats;
-    };
-
-    // Metodi private
-    #setUniqueId()
-    {
-        const allEvents = EventModel.getAllEvents();
-        const allIds = allEvents.map( (event) => event.id );
-        this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
-        console.log("ID: ", this.#id);
     };
 
     // Metodi statici
@@ -163,30 +185,15 @@ class   EventModel
                 return allEvents[eventIndex];
             };
 
-    static  addEvent(_id, _title, _description, _eventDate, _maxSeats)
+    static  modifyEvent(_id, _newEventObj)
             {
-                const   eventToAdd  =   {
-                                            "id"            :   _id,
-                                            "title"         :   _title,
-                                            ...( _description !== "" && { "description": _description }),
-                                            "eventDate"     :   _eventDate,
-                                            "maxSeats"      :   _maxSeats
-                                        };
+                // Si recupera l'intero contenuto del file json e, successivamente l'indice dell'evento da modificare
                 let allEvents = EventModel.getAllEvents();
-                allEvents.push(eventToAdd);
-                try
-                {
-                    fileSystem.writeFileSync(eventsDBPath, JSON.stringify(allEvents));
-                }
-                catch (error)
-                {
-                    return false;
-                }
-                return true;
-            };
-
-    static  modifyEvent(_id, _title, _description, _eventDate, _maxSeats)
-            {
+                if (allEvents.length == 0)
+                    throw new Error("Nessun evento esistente!");
+                const eventIndex = allEvents.findIndex( eventChecked => eventChecked.id == eventId);
+                if (eventIndex < 0)
+                    throw new Error("Evento non presente nel DB!");                
             };
 
     static  eventsInDB()

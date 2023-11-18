@@ -143,6 +143,8 @@ function update(request, response)
     let     modifiersBool                           =   {};
     for (let key in modifiersObj)
         modifiersBool[key] = modifiersObj[key] ? true : false;
+    
+
     response.send(`Sono il controller events/update (put) con evento: ${request.params.event}`);
 }
 

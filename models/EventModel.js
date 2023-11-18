@@ -20,6 +20,7 @@ class   EventModel
 
     // Proprietà static
 
+    static  eventInstances = [];
     static  lastGeneratedId;
 
     // Costruttore e metodi
@@ -32,7 +33,14 @@ class   EventModel
         this.#description   =   _description;
         this.#date          =   _date;
         this.#maxSeats      =   _maxSeats;
-        EventModel.addEvent(this.#id, this.#title, this.#description, this.#date, this.#maxSeats);
+        // Se l'aggiunta di un nuovo evento non va a buon fine si genera un errore, altrimenti si salva l'istanza e si aggiorna la memoria relativa all'ultimo id generato
+        if (!EventModel.addEvent(this.#id, this.#title, this.#description, this.#date, this.#maxSeats))
+            throw new Error("Evento rigettato!");
+        else
+        {
+            EventModel.lastGeneratedId = this.#id;
+            EventModel.eventInstances.push(this);
+        }
     }
 
     // Metodi private
@@ -41,7 +49,6 @@ class   EventModel
         const allEvents = EventModel.getAllEvents();
         const allIds = allEvents.map( (event) => event.id );
         this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
-        EventModel.lastGeneratedId = this.#id;
         console.log("ID: ", this.#id);
     }
 
@@ -132,8 +139,13 @@ class   EventModel
         }
         catch (error)
         {
-            throw new Error("Evento rigettato!");
+            return false;
         }
+        return true;
+    }
+
+    static  modifyEvent(_id, _title, _description, _date, _maxSeats)
+    {
     }
 
     static  eventsInDB()

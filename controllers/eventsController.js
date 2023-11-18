@@ -21,7 +21,7 @@ function index(request, response)
                                             for (let key in singleEvent)
                                                 if (singleEvent.hasOwnProperty(key))
                                                 {
-                                                    let tagOpen     =   '<a href="#"><h1>';
+                                                    let tagOpen     =   `<a href="/events/${singleEvent.id}"><h1>`;
                                                     let tagClose    =   "</h1></a>"; 
                                                     if (!["id", "title"].includes(key))
                                                     {

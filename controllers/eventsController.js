@@ -1,6 +1,7 @@
 // Importazione modello
 const   express     =   require("express");
 const   eventModel  =   require("../models/EventModel");
+const EventModel = require("../models/EventModel");
 
 function index(request, response)
 {
@@ -19,7 +20,7 @@ function index(request, response)
                                         {
                                             output.push("<li>");
                                             for (let key in singleEvent)
-                                                if (singleEvent.hasOwnProperty(key))
+                                                // if (singleEvent.hasOwnProperty(key))
                                                 {
                                                     let tagOpen     =   `<a href="/events/${singleEvent.id}"><h1>`;
                                                     let tagClose    =   "</h1></a>"; 
@@ -57,7 +58,7 @@ function show(request, response)
                                 response.type("html");
                                 let output = [];
                                 for (let key in actualEvent)
-                                    if (actualEvent.hasOwnProperty(key))
+                                    // if (actualEvent.hasOwnProperty(key))
                                     {
                                         let tagOpen     =   '<h1>';
                                         let tagClose    =   "</h1>"; 
@@ -80,7 +81,38 @@ function show(request, response)
 
 function store(request, response)
 {
-    response.send("Sono il controller events/store (post)");
+    const {title, description, date, maxSeats}  =   request.body;
+    const newEvent                              =   new EventModel(title, description, date, maxSeats);
+    const newEventId                            =   EventModel.getLastGeneratedId();
+    const newEventConfirmed                     =   EventModel.getEvent(newEventId);
+    response.format({
+                        html:       ()  =>
+                            {
+                                response.type("html");
+                                let output = ['<h1 style="text-align:center; color:blue; text-decoration:underscore;">Evento generato con successo</h1>'];
+                                output.push(`<h2 style="text-align:center; color:blue; text-decoration:underscore;">Id associato all'evento: ${newEventId}</h2>`);
+                                let flexBox     =   '<div style="display:flex; justify-content:space-evenly; width:100vw;">@</div>';
+                                let leftBox     =   '<div style="padding:15px; display:flex; flex-direction:column; align-items:start; gap:1vh; border:2px solid green;">@</div>';
+                                let rightBox    =   '<div style="padding:15px; display:flex; flex-direction:column; align-items:start; gap:1vh; border:2px solid yellowgreen;">@</div>';
+                                let leftData    =   ['<h3 style="font-style:italic; align-self: center;">Dati inviati:</h3>'];
+                                let rightData   =   ['<h3 style="font-style:italic; align-self: center;">Dati salvati:</h3>'];
+                                for (let key in newEventConfirmed)
+                                {
+                                    if (key != "id")
+                                    {
+                                        leftData.push(`<h5 style="font-style:italic; color:blue;">${key} : <span style="font-style:normal; color:black;">${request.body[key]}</span></h5>`);
+                                        rightData.push(`<h5 style="font-style:italic; color:blue;">${key} : <span style="font-style:normal; color:black;">${newEventConfirmed[key]}</span></h5>`);
+                                    }
+                                }
+                                leftBox     =   leftBox.replace("@", leftData);
+                                console.log(leftBox);
+                                rightBox    =   rightBox.replace("@", rightData);
+                                console.log(leftBox);
+                                flexBox     =   flexBox.replace("@", leftBox.concat(rightBox));
+                                output.push(flexBox);
+                                response.send(output.join(""));
+                            }
+                    });
 }
 
 function update(request, response)

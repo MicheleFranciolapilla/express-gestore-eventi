@@ -18,6 +18,10 @@ class   EventModel
     #date;
     #maxSeats;
 
+    // Proprietà static
+
+    static  lastGeneratedId;
+
     // Costruttore e metodi
 
     // Si inseriscono tutti i campi richiesti, ad eccezione dell'id che verrà determinato dinamicamente per garantirne l'unicità
@@ -29,7 +33,6 @@ class   EventModel
         this.#date          =   _date;
         this.#maxSeats      =   _maxSeats;
         EventModel.addEvent(this.#id, this.#title, this.#description, this.#date, this.#maxSeats);
-
     }
 
     // Metodi private
@@ -38,6 +41,7 @@ class   EventModel
         const allEvents = EventModel.getAllEvents();
         const allIds = allEvents.map( (event) => event.id );
         this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
+        EventModel.lastGeneratedId = this.#id;
         console.log("ID: ", this.#id);
     }
 
@@ -135,6 +139,11 @@ class   EventModel
     static  eventsInDB()
     {
         return EventModel.getAllEvents().length;
+    }
+
+    static  getLastGeneratedId()
+    {
+        return EventModel.lastGeneratedId;
     }
 }
 

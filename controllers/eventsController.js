@@ -50,11 +50,7 @@ function show(request, response)
 {
     if (eventModel.eventsInDB() == 0)
         throw new Error("Nessun evento esistente!");
-    const allEvents     = eventModel.getAllEvents();
-    const eventIndex    = allEvents.findIndex( singleEvent  =>  singleEvent.id == request.params.event);
-    if (eventIndex < 0)
-        throw new Error("Evento non presente nel DB!");
-    const actualEvent   = allEvents[eventIndex];
+    const actualEvent   = eventModel.getEvent(request.params.event);
     response.format({
                         html:       ()  =>
                             {

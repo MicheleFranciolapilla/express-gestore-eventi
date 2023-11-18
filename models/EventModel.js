@@ -15,7 +15,7 @@ class   EventModel
     #title;
     #titleSlug;
     #description;
-    #date;
+    #eventDate;
     #maxSeats;
 
     // Proprietà static
@@ -26,22 +26,64 @@ class   EventModel
     // Costruttore e metodi
 
     // Si inseriscono tutti i campi richiesti, ad eccezione dell'id che verrà determinato dinamicamente per garantirne l'unicità
-    constructor(_title, _description = "", _date, _maxSeats)
+    constructor(_title, _description = "", _eventDate, _maxSeats)
     {
         this.#setUniqueId();
         this.#title         =   _title;
         this.#description   =   _description;
-        this.#date          =   _date;
+        this.#eventDate     =   _eventDate;
         this.#maxSeats      =   _maxSeats;
         // Se l'aggiunta di un nuovo evento non va a buon fine si genera un errore, altrimenti si salva l'istanza e si aggiorna la memoria relativa all'ultimo id generato
-        if (!EventModel.addEvent(this.#id, this.#title, this.#description, this.#date, this.#maxSeats))
+        if (!EventModel.addEvent(this.#id, this.#title, this.#description, this.#eventDate, this.#maxSeats))
             throw new Error("Evento rigettato!");
         else
         {
             EventModel.lastGeneratedId = this.#id;
             EventModel.eventInstances.push(this);
         }
-    }
+    };
+
+    // Setters
+    set title(value)
+    {
+        this.#title = value;
+    };
+
+    set description(value)
+    {
+        this.#description = value;
+    };
+
+    set eventDate(value)
+    {
+        this.#eventDate = value;
+    };
+
+    set maxSeats(value)
+    {
+        this.#maxSeats = value;
+    };
+
+    // Getters
+    get title()
+    {
+        return this.#title;
+    };
+
+    get description()
+    {
+        return this.#description;
+    };
+
+    get eventDate()
+    {
+        return this.#eventDate;
+    };
+
+    get maxSeats()
+    {
+        return this.#maxSeats;
+    };
 
     // Metodi private
     #setUniqueId()
@@ -50,21 +92,21 @@ class   EventModel
         const allIds = allEvents.map( (event) => event.id );
         this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
         console.log("ID: ", this.#id);
-    }
+    };
 
     // Metodi statici
     static  checkDBExistance()
-    {
-        return fileSystem.existsSync(eventsDBPath);
-    }
+            {
+                return fileSystem.existsSync(eventsDBPath);
+            };
 
     static  fromObjToArray(objToArray)
-    {
-        const simpleObj = objToArray;
-        let arrayToReturn = [];
-        arrayToReturn.push(simpleObj);
-        return arrayToReturn;
-    }
+            {
+                const simpleObj = objToArray;
+                let arrayToReturn = [];
+                arrayToReturn.push(simpleObj);
+                return arrayToReturn;
+            };
 
     static  getAllEvents()
             {
@@ -108,55 +150,54 @@ class   EventModel
                         return jsonFileData;
                     }
                 }
-            } 
+            }; 
 
     static  getEvent(eventId)
-    {
-        const allEvents = EventModel.getAllEvents();
-        if (allEvents.length == 0)
-            throw new Error("Nessun evento esistente!");
-        const eventIndex = allEvents.findIndex( eventChecked => eventChecked.id == eventId);
-        if (eventIndex < 0)
-            throw new Error("Evento non presente nel DB!");
-        return allEvents[eventIndex];
-    }
+            {
+                const allEvents = EventModel.getAllEvents();
+                if (allEvents.length == 0)
+                    throw new Error("Nessun evento esistente!");
+                const eventIndex = allEvents.findIndex( eventChecked => eventChecked.id == eventId);
+                if (eventIndex < 0)
+                    throw new Error("Evento non presente nel DB!");
+                return allEvents[eventIndex];
+            };
 
-    static  addEvent(_id, _title, _description, _date, _maxSeats)
-    {
-        const   eventToAdd  =   {
-                                    "id"            :   _id,
-                                    "title"         :   _title,
-                                    ...( _description !== "" && { "description": _description }),
-                                    // "description"   :   _description,
-                                    "date"          :   _date,
-                                    "maxSeats"      :   _maxSeats
-                                };
-        let allEvents = EventModel.getAllEvents();
-        allEvents.push(eventToAdd);
-        try
-        {
-            fileSystem.writeFileSync(eventsDBPath, JSON.stringify(allEvents));
-        }
-        catch (error)
-        {
-            return false;
-        }
-        return true;
-    }
+    static  addEvent(_id, _title, _description, _eventDate, _maxSeats)
+            {
+                const   eventToAdd  =   {
+                                            "id"            :   _id,
+                                            "title"         :   _title,
+                                            ...( _description !== "" && { "description": _description }),
+                                            "eventDate"     :   _eventDate,
+                                            "maxSeats"      :   _maxSeats
+                                        };
+                let allEvents = EventModel.getAllEvents();
+                allEvents.push(eventToAdd);
+                try
+                {
+                    fileSystem.writeFileSync(eventsDBPath, JSON.stringify(allEvents));
+                }
+                catch (error)
+                {
+                    return false;
+                }
+                return true;
+            };
 
-    static  modifyEvent(_id, _title, _description, _date, _maxSeats)
-    {
-    }
+    static  modifyEvent(_id, _title, _description, _eventDate, _maxSeats)
+            {
+            };
 
     static  eventsInDB()
-    {
-        return EventModel.getAllEvents().length;
-    }
+            {
+                return EventModel.getAllEvents().length;
+            };
 
     static  getLastGeneratedId()
-    {
-        return EventModel.lastGeneratedId;
-    }
+            {
+                return EventModel.lastGeneratedId;
+            };
 }
 
 module.exports = EventModel;

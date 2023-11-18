@@ -80,10 +80,10 @@ function show(request, response)
 
 function store(request, response)
 {
-    const {title, description, date, maxSeats}  =   request.body;
-    const newEvent                              =   new eventModel(title, description, date, maxSeats);
-    const newEventId                            =   eventModel.getLastGeneratedId();
-    const newEventConfirmed                     =   eventModel.getEvent(newEventId);
+    const {title, description, eventDate, maxSeats} =   request.body;
+    const newEvent                                  =   new eventModel(title, description, eventDate, maxSeats);
+    const newEventId                                =   eventModel.getLastGeneratedId();
+    const newEventConfirmed                         =   eventModel.getEvent(newEventId);
     response.format({
                         html:       ()  =>
                             {
@@ -137,13 +137,13 @@ function update(request, response)
 {
     if (eventModel.eventsInDB() == 0)
         throw new Error("Nessun evento esistente!");
-    const   actualEvent                             =   eventModel.getEvent(request.params.event);
-    const   {title, description, date, maxSeats}    =   request.body;
-    const   modifiersObj                            =   {title, description, date, maxSeats};
-    let     modifiersBool                           =   {};
+    const   actualEvent                                 =   eventModel.getEvent(request.params.event);
+    const   {title, description, eventDate, maxSeats}   =   request.body;
+    const   modifiersObj                                =   {title, description, eventDate, maxSeats};
+    let     modifiersBool                               =   {};
     for (let key in modifiersObj)
         modifiersBool[key] = modifiersObj[key] ? true : false;
-    
+
 
     response.send(`Sono il controller events/update (put) con evento: ${request.params.event}`);
 }

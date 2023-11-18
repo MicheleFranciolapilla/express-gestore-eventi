@@ -10,5 +10,6 @@ router.get("/", eventsController.index);
 router.get("/:event", eventsController.show);
 router.post("/", eventsController.store);
 router.put("/:event", eventsController.update);
+router.delete("/:event", eventsController.destroy);
 
 module.exports = router;

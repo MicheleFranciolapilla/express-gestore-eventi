@@ -222,6 +222,35 @@ class   EventModel
                 }
             };
 
+    static  deleteEvent(eventId)
+            {
+                // Si recupera l'intero contenuto del file json e, successivamente l'indice dell'evento da cancellare
+                let allEvents = EventModel.getAllEvents();
+                if (allEvents.length == 0)
+                    throw new Error("Nessun evento esistente!");
+                const eventIndex = allEvents.findIndex( eventChecked => eventChecked.id == eventId);
+                if (eventIndex < 0)
+                    throw new Error("Evento non presente nel DB!");    
+                // Si recupera l'indice dell'istanza relativa all'evento da cancellare
+                const eventInstanceIndex = EventModel.eventInstances.findIndex( instance => instance.#id == eventId);        
+                if (eventInstanceIndex < 0)  
+                    throw new Error("Impossibile recuperare l'istanza relativa all'evento!");
+                // Si cancella l'elemento dall'array
+                allEvents.splice(eventIndex, 1);
+                // Si tenta il salvataggio del file con i nuovi dati
+                try
+                {
+                    fileSystem.writeFileSync(eventsDBPath, JSON.stringify(allEvents));
+                }
+                // In caso di problemi con il salvataggio si genera un errore e non si procede alla cancellazione dell'istanza
+                catch
+                {
+                    throw new Error("Operazione rigettata e istanza invariata!");
+                }
+                // Se invece tutto procede regolarmente, allora anche l'istanza viene cancellata
+                EventModel.eventInstances.splice(eventInstanceIndex, 1);
+            };
+
     static  eventsInDB()
             {
                 return EventModel.getAllEvents().length;

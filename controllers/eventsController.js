@@ -48,8 +48,6 @@ function index(request, response)
 
 function show(request, response)
 {
-    if (eventModel.eventsInDB() == 0)
-        throw new Error("Nessun evento esistente!");
     const actualEvent   = eventModel.getEvent(request.params.event);
     response.format({
                         html:       ()  =>
@@ -75,7 +73,6 @@ function show(request, response)
                                 response.json(actualEvent);
                             }
                     });
-
 }
 
 function store(request, response)
@@ -135,8 +132,6 @@ function store(request, response)
 
 function update(request, response)
 {
-    if (eventModel.eventsInDB() == 0)
-        throw new Error("Nessun evento esistente!");
     const   eventId                                     =   request.params.event;
     let     eventBeforeModify                           =   eventModel.getEvent(eventId);
     const   {title, description, eventDate, maxSeats}   =   request.body;
@@ -171,4 +166,22 @@ function update(request, response)
                     });
 }
 
-module.exports  =   { index, show, store, update };
+function destroy(request, response)
+{
+    const   eventId         =   request.params.event;
+    const   eventToDelete   =   eventModel.getEvent(eventId);
+    eventModel.deleteEvent(eventId);
+    response.format({
+                        html:       ()  =>
+                            {
+                                response.type("html");
+                                response.send(`<h1 style="color:red;">L'evento con id: ${eventId} - titolo: ${eventToDelete.title}, è stato cancellato come richiesto!</h1>`);
+                            },
+                        default:    ()  =>
+                            {
+                                response.json({ "Evento cancellato con successo"    :   `id: ${eventId} - titolo: ${eventToDelete.title}, non più presente nel DB!` });
+                            }
+                    });
+}
+
+module.exports  =   { index, show, store, update, destroy };

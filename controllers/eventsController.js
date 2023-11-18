@@ -137,26 +137,33 @@ function update(request, response)
 {
     if (eventModel.eventsInDB() == 0)
         throw new Error("Nessun evento esistente!");
-    let     eventBeforeModify                           =   eventModel.getEvent(request.params.event);
+    const   eventId                                     =   request.params.event;
+    let     eventBeforeModify                           =   eventModel.getEvent(eventId);
     const   {title, description, eventDate, maxSeats}   =   request.body;
     const   modifiersObj                                =   {title, description, eventDate, maxSeats};
-    // let     modifiersBool                               =   {};
-    // for (let key in modifiersObj)
-    //     modifiersBool[key] = modifiersObj[key] ? true : false;
-    eventModel.modifyEvent(request.params.event, modifiersObj);
-    let     eventAfterModify                            =   eventModel.getEvent(request.params.event);
+    eventModel.modifyEvent(eventId, modifiersObj);
+    let     eventAfterModify                            =   eventModel.getEvent(eventId);
     delete eventBeforeModify.id;
     delete eventAfterModify.id;
     response.format({
                         html:       ()  =>
                             {
-
+                                response.type("html");
+                                let output = ['<h1 style="color:blue; text-decoration:underscore;">Evento modificato con successo</h1>'];
+                                output.push(`<h2 style="color:blue; text-decoration:underscore;">Id associato all'evento: ${eventId}</h2><br><br>`);
+                                output.push('<h3 style="font-style:italic; color:green;">Evento prima della modifica:</h3>');
+                                for (let key in eventBeforeModify)
+                                    output.push(`<h5 style="font-style:italic; color:blue;">${key} : <span style="font-style:normal; color:black;">${eventBeforeModify[key]}</span></h5>`);
+                                output.push('<br><h3 style="font-style:italic; color:yellowgreen;">Evento dopo la modifica:</h3>');
+                                for (let key in eventAfterModify)
+                                    output.push(`<h5 style="font-style:italic; color:blue;">${key} : <span style="font-style:normal; color:black;">${eventAfterModify[key]}</span></h5>`);
+                                response.send(output.join(""));
                             },
                         default:    ()  =>
                             {
 
                                 response.json(  {
-                                                    "Evento modificato con successo"    :   `Id evento: ${request.params.event}`,
+                                                    "Evento modificato con successo"    :   `Id evento: ${eventId}`,
                                                     "Evento prima della modifica"       :   eventBeforeModify,
                                                     "Evento dopo la modifica"           :   eventAfterModify
                                                 });

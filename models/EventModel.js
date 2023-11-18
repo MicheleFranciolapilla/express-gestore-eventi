@@ -96,6 +96,11 @@ class   EventModel
     };
 
     // Getters
+    get id()
+    {
+        return this.#id;
+    };
+
     get title()
     {
         return this.#title;
@@ -198,10 +203,9 @@ class   EventModel
                 const eventInstance = EventModel.eventInstances.find( instance => instance.#id == eventId);        
                 if (eventInstance == undefined)  
                     throw new Error("Impossibile recuperare l'istanza relativa all'evento!");
-                // Se non si è verificato nessun errore nel recupero dei dati da file e dell'istanza, si procede con la modifica dei dati nel file
+                // Se non si è verificato nessun errore nel recupero dei dati da file e dell'istanza, si procede con la modifica dei dati nell'array
                 for (let key in modifiersObj)
                 {
-                    // Per i dati nel file non si controlla preventivamente che la chiave esista poichè potrebbe anche trattarsi di una proprietà secondaria, non ancora settata. 
                     allEvents[eventIndex][key] = modifiersObj[key];
                 }
                 // Si tenta il salvataggio del file con i nuovi dati
@@ -214,11 +218,10 @@ class   EventModel
                 {
                     throw new Error("Modifica rigettata e istanza invariata!");
                 }
-                // Se invece tutto procede regolarmente, allora anche l'istanza viene aggiornata ma, a differenza di quanto fatto nell'aggiornamento dei dati del file, in questo caso si verifica che le chiavi siano presenti nell'istanza stessa
+                // Se invece tutto procede regolarmente, allora anche l'istanza viene aggiornata
                 for (let key in modifiersObj)
                 {
-                    if (eventInstance.hasOwnProperty(key))
-                        eventInstance[key] = modifiersObj[key];
+                    eventInstance[key] = modifiersObj[key];
                 }
             };
 
@@ -260,6 +263,11 @@ class   EventModel
             {
                 return EventModel.lastGeneratedId;
             };
+    
+    static  getInstance(instanceIndex)
+    {
+        return EventModel.eventInstances[instanceIndex];
+    }
 }
 
 module.exports = EventModel;

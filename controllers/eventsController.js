@@ -2,10 +2,27 @@
 const   express     =   require("express");
 const   eventModel  =   require("../models/EventModel");
 
+function showAllEventsInstances()
+{
+    for (let i = 0; i < eventModel.eventInstances.length; i++)
+    {
+        console.log("******************************************");
+        console.log(`Istanza nr ${i}:`);
+        const instance = eventModel.getInstance(i);
+        console.log(`ID :     ${instance.id}`);
+        console.log(`title :     ${instance.title}`);
+        console.log(`description :     ${instance.description}`);
+        console.log(`eventDate :     ${instance.eventDate}`);
+        console.log(`maxSeats :     ${instance.maxSeats}`);
+        console.log("******************************************");
+    }
+}
+
 function index(request, response)
 {
     const   eventsInDB  = eventModel.eventsInDB();
     const   allEvents   = eventModel.getAllEvents();
+    showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {
@@ -49,6 +66,7 @@ function index(request, response)
 function show(request, response)
 {
     const actualEvent   = eventModel.getEvent(request.params.event);
+    showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {
@@ -81,6 +99,7 @@ function store(request, response)
     const newEvent                                  =   new eventModel(title, description, eventDate, maxSeats);
     const newEventId                                =   eventModel.getLastGeneratedId();
     const newEventConfirmed                         =   eventModel.getEvent(newEventId);
+    showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {
@@ -140,6 +159,7 @@ function update(request, response)
     let     eventAfterModify                            =   eventModel.getEvent(eventId);
     delete eventBeforeModify.id;
     delete eventAfterModify.id;
+    showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {
@@ -171,6 +191,7 @@ function destroy(request, response)
     const   eventId         =   request.params.event;
     const   eventToDelete   =   eventModel.getEvent(eventId);
     eventModel.deleteEvent(eventId);
+    showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {

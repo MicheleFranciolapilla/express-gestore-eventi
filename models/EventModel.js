@@ -185,7 +185,7 @@ class   EventModel
                 return allEvents[eventIndex];
             };
 
-    static  modifyEvent(_id, _newEventObj)
+    static  modifyEvent(eventId, newEventObj)
             {
                 // Si recupera l'intero contenuto del file json e, successivamente l'indice dell'evento da modificare
                 let allEvents = EventModel.getAllEvents();
@@ -193,7 +193,33 @@ class   EventModel
                     throw new Error("Nessun evento esistente!");
                 const eventIndex = allEvents.findIndex( eventChecked => eventChecked.id == eventId);
                 if (eventIndex < 0)
-                    throw new Error("Evento non presente nel DB!");                
+                    throw new Error("Evento non presente nel DB!");    
+                // Si recupera l'istanza relativa all'evento da modificare
+                const eventInstance = EventModel.eventInstances.find( instance => instance.#id == eventId);        
+                if (eventInstance == undefined)  
+                    throw new Error("Impossibile recuperare l'istanza relativa all'evento!");
+                // Se non si è verificato nessun errore nel recupero dei dati da file e dell'istanza, si procede con la modifica dei dati nel file
+                for (let key in newEventObj)
+                {
+                    // Per i dati nel file non si controlla preventivamente che la chiave esista poichè potrebbe anche trattarsi di una proprietà secondaria, non ancora settata. 
+                    allEvents[eventIndex][key] = newEventObj[key];
+                }
+                // Si tenta il salvataggio del file con i nuovi dati
+                try
+                {
+                    fileSystem.writeFileSync(eventsDBPath, JSON.stringify(allEvents));
+                }
+                // In caso di problemi con il salvataggio si genera un errore e non si procede alla modifica dei dati nell'istanza
+                catch
+                {
+                    throw new Error("Modifica rigettata e istanza invariata!");
+                }
+                // Se invece tutto procede regolarmente, allora anche l'istanza viene aggiornata ma, a differenza di quanto fatto nell'aggiornamento dei dati del file, in questo caso si verifica che le chiavi siano presenti nell'istanza stessa
+                for (let key in newEventObj)
+                {
+                    if (eventInstance.hasOwnProperty(key))
+                        eventInstance[key] = newEventObj[key];
+                }
             };
 
     static  eventsInDB()

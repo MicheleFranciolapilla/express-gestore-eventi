@@ -268,6 +268,21 @@ class   EventModel
     {
         return EventModel.eventInstances[instanceIndex];
     }
+
+    // Funzione eseguita all'avvio del server (condizione riportata in .env) che consente di connettere il modello al file json di riferimento, istanziando tutti gli eventi già presenti nel db
+    static  connectModelToDB()
+    {
+        const allEvents = EventModel.getAllEvents();
+        if (allEvents.length != 0)
+        {
+            fileSystem.writeFileSync(eventsDBPath, "");
+            allEvents.forEach( currentEvent  =>
+                {
+                    const {title, description, eventDate, maxSeats} = currentEvent;
+                    const newEvent = new EventModel(title, description, eventDate, maxSeats);
+                });
+        }
+    }
 }
 
 module.exports = EventModel;

@@ -1,14 +1,14 @@
 // Importazione modello
 const   express     =   require("express");
-const   eventModel  =   require("../models/EventModel");
+const   EventModel  =   require("../models/EventModel");
 
 function showAllEventsInstances()
 {
-    for (let i = 0; i < eventModel.eventInstances.length; i++)
+    for (let i = 0; i < EventModel.eventInstances.length; i++)
     {
         console.log("******************************************");
         console.log(`Istanza nr ${i}:`);
-        const instance = eventModel.getInstance(i);
+        const instance = EventModel.getInstance(i);
         console.log(`ID :     ${instance.id}`);
         console.log(`title :     ${instance.title}`);
         console.log(`description :     ${instance.description}`);
@@ -20,8 +20,8 @@ function showAllEventsInstances()
 
 function index(request, response)
 {
-    const   eventsInDB  = eventModel.eventsInDB();
-    const   allEvents   = eventModel.getAllEvents();
+    const   eventsInDB  = EventModel.eventsInDB();
+    const   allEvents   = EventModel.getAllEvents();
     showAllEventsInstances();
     response.format({
                         html:       ()  =>
@@ -65,7 +65,7 @@ function index(request, response)
 
 function show(request, response)
 {
-    const actualEvent   = eventModel.getEvent(request.params.event);
+    const actualEvent   = EventModel.getEvent(request.params.event);
     showAllEventsInstances();
     response.format({
                         html:       ()  =>
@@ -96,9 +96,9 @@ function show(request, response)
 function store(request, response)
 {
     const {title, description, eventDate, maxSeats} =   request.body;
-    const newEvent                                  =   new eventModel(title, description, eventDate, maxSeats);
-    const newEventId                                =   eventModel.getLastGeneratedId();
-    const newEventConfirmed                         =   eventModel.getEvent(newEventId);
+    const newEvent                                  =   new EventModel(title, description, eventDate, maxSeats);
+    const newEventId                                =   EventModel.getLastGeneratedId();
+    const newEventConfirmed                         =   EventModel.getEvent(newEventId);
     showAllEventsInstances();
     response.format({
                         html:       ()  =>
@@ -152,11 +152,11 @@ function store(request, response)
 function update(request, response)
 {
     const   eventId                                     =   request.params.event;
-    let     eventBeforeModify                           =   eventModel.getEvent(eventId);
+    let     eventBeforeModify                           =   EventModel.getEvent(eventId);
     const   {title, description, eventDate, maxSeats}   =   request.body;
     const   modifiersObj                                =   {title, description, eventDate, maxSeats};
-    eventModel.modifyEvent(eventId, modifiersObj);
-    let     eventAfterModify                            =   eventModel.getEvent(eventId);
+    EventModel.modifyEvent(eventId, modifiersObj);
+    let     eventAfterModify                            =   EventModel.getEvent(eventId);
     delete eventBeforeModify.id;
     delete eventAfterModify.id;
     showAllEventsInstances();
@@ -189,8 +189,8 @@ function update(request, response)
 function destroy(request, response)
 {
     const   eventId         =   request.params.event;
-    const   eventToDelete   =   eventModel.getEvent(eventId);
-    eventModel.deleteEvent(eventId);
+    const   eventToDelete   =   EventModel.getEvent(eventId);
+    EventModel.deleteEvent(eventId);
     showAllEventsInstances();
     response.format({
                         html:       ()  =>

@@ -23,5 +23,10 @@ const   server              =   express();
 
         server.listen( port, () =>
         {
+            // Importazione modello
+            const EventModel = require("./models/EventModel");
+            // In funzione del contenuto della specifica variabile nel .env, si connette il database (file json) al corrispondente modello, in modo da istanziare tutti gli eventi preesistenti
+            if (process.env.DB_ON_START == "connect_json_to_model")
+                EventModel.connectModelToDB();
             console.log(`Server in esecuzione su ${process.env.HOST}${port}`);
         });

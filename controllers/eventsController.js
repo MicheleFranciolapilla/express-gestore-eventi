@@ -42,11 +42,11 @@ const   filterFunctions =   {
                                 },
                                 s_less_than(fromDB, fromQuery)
                                 {
-                                    return  fromDB < fromQuery;
+                                    return  parseInt(fromDB) < parseInt(fromQuery);
                                 },
                                 s_more_than(fromDB, fromQuery)
                                 {
-                                    return  fromDB > fromQuery;
+                                    return  parseInt(fromDB) > parseInt(fromQuery);
                                 }
                             };
 
@@ -87,7 +87,24 @@ function getValidQueries(request)
     console.log("*******************************************");    
     console.log("*******************************************");
     let queries         =   Object.keys(request.query);
-    console.log("Tutte le queries: ", queries);
+    let queriesValues   =   Object.values(request.query);
+    let correctedQV     =   queriesValues.map( singleQV =>
+        {
+            switch (typeof singleQV)
+            {
+                case "string"   :   return singleQV;
+                case "object"   :   if (Array.isArray(singleQV))
+                                        return singleQV[singleQV.length - 1];
+                                    else
+                                        throw new Error("Query invalida!");
+                default         :   throw new Error("Query invalida!");
+            }
+        }); 
+    // console.log("Tutte le queries da request: ", request.query);
+    // console.log("Tutte le queries: ", queries,);
+    console.log("Tutte le queries.......", queries);
+    console.log("Tutti i valori grezzi delle queries......", queriesValues);
+    console.log("Tutti i valori corretti delle queries......", correctedQV);
     if (queries.length == 0)
         return {};
     let validQueries    =   {};
@@ -95,13 +112,13 @@ function getValidQueries(request)
     {
         var queriesToBeRemoved = [];
         console.log("Key attuale: ", key);
-        queries.forEach( queryStr   =>
+        queries.forEach( (queryStr, index)    =>
             {
                 console.log("Query string attuale: ", queryStr);
                 if (allowedFilters[key].includes(queryStr))
                 {
-                    if (EventModel.isValidProperty(key, request.query[queryStr]))
-                        validQueries[key] = [queryStr, request.query[queryStr]];
+                    if (EventModel.isValidProperty(key, correctedQV[index]))
+                        validQueries[key] = [queryStr, correctedQV[index]];
                     queriesToBeRemoved.push(queryStr);
                 }
                 console.log("Valid queries: ", validQueries);

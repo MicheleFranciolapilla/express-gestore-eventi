@@ -26,7 +26,41 @@ function showAllEventsInstances()
 
 function getValidQueries(request)
 {
-    const   queries =   Object.keys(request.query);
+    console.log("*******************************************");
+    console.log("*******************************************");    
+    console.log("*******************************************");
+    console.log("Funzione getValidQueries");
+    console.log("*******************************************");
+    console.log("*******************************************");    
+    console.log("*******************************************");
+    let queries         =   Object.keys(request.query);
+    console.log("Tutte le queries: ", queries);
+    let validQueries    =   {};
+    for (let key in allowedFilters)
+    {
+        var queriesToBeRemoved = [];
+        console.log("Key attuale: ", key);
+        queries.forEach( queryStr   =>
+            {
+                console.log("Query string attuale: ", queryStr);
+                if (allowedFilters[key].includes(queryStr))
+                {
+                    if (EventModel.isValidProperty(key, request.query[queryStr]))
+                        validQueries[key] = [queryStr, request.query[queryStr]];
+                    queriesToBeRemoved.push(queryStr);
+                }
+                console.log("Valid queries: ", validQueries);
+            });
+        console.log("Queries da rimuovere: ", queriesToBeRemoved);
+        queriesToBeRemoved.forEach( queryToRemove   =>
+            {
+                queries.splice(queries.indexOf(queryToRemove), 1);
+            });
+        console.log("Queries dopo pulizia: ", queries);
+    }
+    console.log("Valid queries finali: ", validQueries);
+    console.log("Queries residue: ", queries);
+    return validQueries;
 }
 
 function index(request, response)
@@ -35,28 +69,8 @@ function index(request, response)
     const   eventsInDB  =   EventModel.eventsInDB();
     if (eventsInDB != 0)
     {
-        var queries         =   Object.keys(request.query);
-        // Si salvano in un array tutte le queries valide, per eventuali usi futuri; al momento si prende in considerazione solo l'ultima di esse
-        var validQueries    =   queries.filter(queryStr =>  
-            {
-                if (allowedFilters.includes(queryStr))
-                {
-                    if (EventModel.isValidDate(request.query[queryStr]))
-                        return true;
-                }
-            });
-        console.log("Queries valide: ", validQueries);
-        var lastValidQuery  =   validQueries.length != 0    ?   validQueries[validQueries.length - 1]   :   null;
+        var validQueries = getValidQueries(request);
         var allEvents       =   EventModel.getAllEvents();
-        if (lastValidQuery)
-        {
-            var dateTime        =   request.query[lastValidQuery];
-            var filteredEvents  =   allEvents.filter( singleEvent   =>
-                {
-
-                });
-            console.log("Query ok: ", lastValidQuery);
-        }
     }
     showAllEventsInstances();
     response.format({

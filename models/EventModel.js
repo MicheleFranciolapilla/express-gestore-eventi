@@ -284,10 +284,36 @@ class   EventModel
         }
     }
 
-    static  isValidDate(dateToCheck)
+    static  isValidTitle(titleToCheck)
+    {
+        return true;
+    }
+
+    static  isValidDescription(descriptionToCheck)
+    {
+        return true;
+    }
+
+    static  isValidEventDate(dateToCheck)
     {
         const date = new Date(dateToCheck);
         return !isNaN(date.getTime());
+    }
+
+    static  isValidMaxSeats(maxSeatsToCheck)
+    {
+        return !isNaN(maxSeatsToCheck);
+    }
+
+    static  isValidProperty(propertyType, propertyToCheck)
+    {
+        switch (propertyType)
+        {
+            case "title"        :   return  EventModel.isValidTitle(propertyToCheck);
+            case "description"  :   return  EventModel.isValidDescription(propertyToCheck);
+            case "eventDate"    :   return  EventModel.isValidEventDate(propertyToCheck);
+            case "maxSeats"     :   return  EventModel.isValidMaxSeats(propertyToCheck);
+        }
     }
 }
 

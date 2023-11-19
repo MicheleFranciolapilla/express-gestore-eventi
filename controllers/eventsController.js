@@ -6,7 +6,60 @@ const   allowedFilters  =   {
                                 description :   ["d_with"],
                                 eventDate   :   ["f_exact", "f_before", "f_after"],
                                 maxSeats    :   ["s_less_than", "s_more_than"]
-                            }
+                            };
+const   filterFunctions =   {
+                                t_with(fromDB, fromQuery)
+                                {
+                                    return findText(fromDB, fromQuery);
+                                },
+                                d_with(fromDB, fromQuery)
+                                {
+                                    return findText(fromDB, fromQuery);
+                                },
+                                f_exact(fromDB, fromQuery)
+                                {
+                                    const   msecsInADay =   24 * 60 * 60 * 1000;
+                                    const   dayStartsAt =   timeFromDate(fromQuery);
+                                    const   dayEndsAt   =   dayStartsAt + msecsInADay;
+                                    const   DBEventDate =   timeFromDate(fromDB);
+
+                                    return  ((dayStartsAt <= DBEventDate) && (dayEndsAt >= DBEventDate));
+                                },
+                                f_before(fromDB, fromQuery)
+                                {
+                                    const   queryDate   =   timeFromDate(fromQuery);
+                                    const   DBEventDate =   timeFromDate(fromDB);
+
+                                    return  DBEventDate < queryDate;
+                                },
+                                f_after(fromDB, fromQuery)
+                                {
+                                    const   msecsInADay =   24 * 60 * 60 * 1000;
+                                    const   queryDate   =   timeFromDate(fromQuery);
+                                    const   DBEventDate =   timeFromDate(fromDB);
+
+                                    return  DBEventDate > (queryDate + msecsInADay);
+                                },
+                                s_less_than(fromDB, fromQuery)
+                                {
+                                    return  fromDB < fromQuery;
+                                },
+                                s_more_than(fromDB, fromQuery)
+                                {
+                                    return  fromDB > fromQuery;
+                                }
+                            };
+
+function findText(fromDB, fromQuery)
+{
+    return fromDB.toLowerCase().includes(fromQuery.toLowerCase());
+}
+
+function timeFromDate(dateToCompute)
+{
+    const date = new Date(dateToCompute);
+    return date.getTime();
+}
 
 function showAllEventsInstances()
 {
@@ -35,6 +88,8 @@ function getValidQueries(request)
     console.log("*******************************************");
     let queries         =   Object.keys(request.query);
     console.log("Tutte le queries: ", queries);
+    if (queries.length == 0)
+        return {};
     let validQueries    =   {};
     for (let key in allowedFilters)
     {
@@ -63,16 +118,40 @@ function getValidQueries(request)
     return validQueries;
 }
 
+function applyFilters(filters, filtersAmount, arrayToFilter)
+{
+    const filteredEvents = arrayToFilter.filter( eventToBeFiltered =>
+        {
+            let filtersMatched = 0;
+            for (let key in filters)
+            {
+                const   functionToCall  =   filters[key][0];
+                const   datafromQuery   =   filters[key][1];
+                const   dataFromEvent   =   eventToBeFiltered[key];
+                if (filterFunctions.hasOwnProperty(functionToCall))
+                {
+                    const filteringResult = filterFunctions[functionToCall](dataFromEvent, datafromQuery);
+                    if (filteringResult)
+                        filtersMatched++;
+                }
+            }
+            return (filtersMatched == filtersAmount);
+        });
+    return filteredEvents;
+}
+
 function index(request, response)
 {
-    // Si verifica l'eventuale presenza di query strings nella rotta, a condizione che ci siano eventi nel db
     const   eventsInDB  =   EventModel.eventsInDB();
     if (eventsInDB != 0)
     {
-        var validQueries = getValidQueries(request);
-        var allEvents       =   EventModel.getAllEvents();
+        var     validQueries    =   getValidQueries(request);
+        const   queriesAmount   =   Object.keys(validQueries).length;
+        var     allEvents       =   EventModel.getAllEvents();
+        if (queriesAmount != 0)
+            allEvents = applyFilters(validQueries, queriesAmount, allEvents);
     }
-    showAllEventsInstances();
+    // showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {

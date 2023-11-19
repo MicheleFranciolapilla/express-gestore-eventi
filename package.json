@@ -25,6 +25,8 @@
     "express": "^4.18.2"
   },
   "nodemonConfig": {
-    "ignore": ["public/eventsDB.json"]
+    "ignore": [
+      "public/eventsDB.json"
+    ]
   }
 }

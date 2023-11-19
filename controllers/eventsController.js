@@ -1,7 +1,12 @@
 // Importazione modello
 const   express         =   require("express");
 const   EventModel      =   require("../models/EventModel");
-const   allowedFilters  =   ["date_before", "date_after"];
+const   allowedFilters  =   {
+                                title       :   ["t_with"],
+                                description :   ["d_with"],
+                                eventDate   :   ["f_exact", "f_before", "f_after"],
+                                maxSeats    :   ["s_less_than", "s_more_than"]
+                            }
 
 function showAllEventsInstances()
 {
@@ -17,6 +22,11 @@ function showAllEventsInstances()
         console.log(`maxSeats :     ${instance.maxSeats}`);
         console.log("******************************************");
     }
+}
+
+function getValidQueries(request)
+{
+    const   queries =   Object.keys(request.query);
 }
 
 function index(request, response)

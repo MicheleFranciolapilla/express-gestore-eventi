@@ -26,8 +26,19 @@ class   EventModel
     // Costruttore e metodi
 
     // Si inseriscono tutti i campi richiesti, ad eccezione dell'id che verrà determinato dinamicamente per garantirne l'unicità
-    constructor(_title, _description = "", _eventDate, _maxSeats)
+    constructor(_title, _description, _eventDate, _maxSeats)
     {
+        if  (!(
+                (EventModel.isValidTitle(_title)) 
+                && 
+                (EventModel.isValidDescription(_description)) 
+                && 
+                (EventModel.isValidEventDate(_eventDate)) 
+                && 
+                (EventModel.isValidMaxSeats(_maxSeats))
+            ))
+            throw new Error("Parametri non validi!");
+
         this.#setUniqueId();
         this.#title         =   _title;
         this.#description   =   _description;
@@ -57,7 +68,7 @@ class   EventModel
         const   eventToAdd  =   {
                                     "id"            :   this.#id,
                                     "title"         :   this.#title,
-                                    ...( this.#description !== "" && { "description": this.#description }),
+                                    "description"   :   this.#description,
                                     "eventDate"     :   this.#eventDate,
                                     "maxSeats"      :   this.#maxSeats
                                 };
@@ -284,20 +295,25 @@ class   EventModel
         }
     }
 
+    // Per il momento si pone una condizione di validità molto elementare
     static  isValidTitle(titleToCheck)
     {
-        return true;
+        return titleToCheck != "";
     }
 
+    // Per il momento si pone una condizione di validità molto elementare
     static  isValidDescription(descriptionToCheck)
     {
-        return true;
+        return descriptionToCheck != "";
     }
 
     static  isValidEventDate(dateToCheck)
     {
         const date = new Date(dateToCheck);
-        return !isNaN(date.getTime());
+        if (isNaN(date.getTime()))
+            return false;
+        else
+            return true;
     }
 
     static  isValidMaxSeats(maxSeatsToCheck)

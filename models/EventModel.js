@@ -49,7 +49,7 @@ class   EventModel
         const allEvents = EventModel.getAllEvents();
         const allIds = allEvents.map( (event) => event.id );
         this.#id = allIds.length != 0 ? Math.max(...allIds) + 1 : 1;
-        console.log("ID: ", this.#id);
+        // console.log("ID: ", this.#id);
     };
 
     #addEvent()
@@ -139,38 +139,38 @@ class   EventModel
             {
                 if (!EventModel.checkDBExistance())
                 {
-                    console.log("file non esiste..... lo si crea!");
+                    // console.log("file non esiste..... lo si crea!");
                     fileSystem.writeFileSync(eventsDBPath, "");
                     return [];
                 }
                 else
                 {
-                    console.log("file esiste");
+                    // console.log("file esiste");
                     const fileContent = fileSystem.readFileSync(eventsDBPath, "utf-8");
                     if (fileContent == "")
                     {
-                        console.log("file senza contenuto.....restituisco array vuoto");
+                        // console.log("file senza contenuto.....restituisco array vuoto");
                         return [];
                     }
                     else
                     {
-                        console.log("file con contenuto");
+                        // console.log("file con contenuto");
                         let jsonFileData = null;
                         try
                         {
                             jsonFileData = JSON.parse(fileContent);
-                            console.log("tento il parsing in formato json....... ", jsonFileData);
+                            // console.log("tento il parsing in formato json....... ", jsonFileData);
                         }
                         catch(error)
                         {
-                            console.log("file corrotto..... lo si ricrea!");
+                            // console.log("file corrotto..... lo si ricrea!");
                             fileSystem.writeFileSync(eventsDBPath, "");
                             return [];
                         }
-                        console.log("Nessun errore nel parsing");
+                        // console.log("Nessun errore nel parsing");
                         if (!Array.isArray(jsonFileData))
                         {
-                            console.log("jsonfiledata non è un array.... ");
+                            // console.log("jsonfiledata non è un array.... ");
                             jsonFileData = EventModel.fromObjToArray(jsonFileData);
                             console.log("jsonfiledata  ora è un array.... ", jsonFileData);
                         }

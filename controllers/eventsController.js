@@ -1,19 +1,23 @@
-// Importazione modello
 const   express         =   require("express");
+// Importazione modello
 const   EventModel      =   require("../models/EventModel");
+// Oggetto con tutte le queries valide, suddivise per proprietà dell'evento
 const   allowedFilters  =   {
                                 title       :   ["t_with"],
                                 description :   ["d_with"],
                                 eventDate   :   ["f_exact", "f_before", "f_after"],
                                 maxSeats    :   ["s_less_than", "s_more_than"]
                             };
+// Oggetto con tutte le funzioni richiamabili per il filtraggio dei dati basato sulle queries
 const   filterFunctions =   {
                                 t_with(fromDB, fromQuery)
                                 {
+                                    console.log("t_with invocata");
                                     return findText(fromDB, fromQuery);
                                 },
                                 d_with(fromDB, fromQuery)
                                 {
+                                    console.log("d_with invocata");
                                     return findText(fromDB, fromQuery);
                                 },
                                 f_exact(fromDB, fromQuery)
@@ -23,6 +27,7 @@ const   filterFunctions =   {
                                     const   dayEndsAt   =   dayStartsAt + msecsInADay;
                                     const   DBEventDate =   timeFromDate(fromDB);
 
+                                    console.log("f_exact invocata");
                                     return  ((dayStartsAt <= DBEventDate) && (dayEndsAt >= DBEventDate));
                                 },
                                 f_before(fromDB, fromQuery)
@@ -30,6 +35,7 @@ const   filterFunctions =   {
                                     const   queryDate   =   timeFromDate(fromQuery);
                                     const   DBEventDate =   timeFromDate(fromDB);
 
+                                    console.log("f_before invocata");
                                     return  DBEventDate < queryDate;
                                 },
                                 f_after(fromDB, fromQuery)
@@ -38,14 +44,17 @@ const   filterFunctions =   {
                                     const   queryDate   =   timeFromDate(fromQuery);
                                     const   DBEventDate =   timeFromDate(fromDB);
 
+                                    console.log("f_after invocata");
                                     return  DBEventDate > (queryDate + msecsInADay);
                                 },
                                 s_less_than(fromDB, fromQuery)
                                 {
+                                    console.log("s_less_than invocata");
                                     return  parseInt(fromDB) < parseInt(fromQuery);
                                 },
                                 s_more_than(fromDB, fromQuery)
                                 {
+                                    console.log("s_more_than invocata");
                                     return  parseInt(fromDB) > parseInt(fromQuery);
                                 }
                             };
@@ -77,6 +86,7 @@ function showAllEventsInstances()
     }
 }
 
+// Funzione incaricata di filtrare le sole query valide (riscontrabili nell'oggetto "allowedFilters") e di mantenere, per le stesse, solo un valore, l'ultimo.
 function getValidQueries(request)
 {
     console.log("*******************************************");
@@ -86,74 +96,137 @@ function getValidQueries(request)
     console.log("*******************************************");
     console.log("*******************************************");    
     console.log("*******************************************");
-    let queries         =   Object.keys(request.query);
-    let queriesValues   =   Object.values(request.query);
-    let correctedQV     =   queriesValues.map( singleQV =>
+
+    let queryKeys       =   Object.keys(request.query);
+    let rawQueryValues  =   Object.values(request.query);
+    let queryValues     =   rawQueryValues.map( rawValue    =>
         {
-            switch (typeof singleQV)
+            switch (typeof rawValue)
             {
-                case "string"   :   return singleQV;
-                case "object"   :   if (Array.isArray(singleQV))
-                                        return singleQV[singleQV.length - 1];
+                case "string"   :   return rawValue;
+                case "object"   :   if (Array.isArray(rawValue))
+                                        return rawValue[rawValue.length - 1];
                                     else
                                         throw new Error("Query invalida!");
                 default         :   throw new Error("Query invalida!");
             }
-        }); 
-    // console.log("Tutte le queries da request: ", request.query);
-    // console.log("Tutte le queries: ", queries,);
-    console.log("Tutte le queries.......", queries);
-    console.log("Tutti i valori grezzi delle queries......", queriesValues);
-    console.log("Tutti i valori corretti delle queries......", correctedQV);
-    if (queries.length == 0)
-        return {};
+        });
     let validQueries    =   {};
-    for (let key in allowedFilters)
+    if (queryKeys.length != 0)
     {
-        var queriesToBeRemoved = [];
-        console.log("Key attuale: ", key);
-        queries.forEach( (queryStr, index)    =>
+        for (let key in allowedFilters)
+        {
+            let queriesToRemove = [];
+            for (let queryIndex = 0; queryIndex < queryKeys.length; queryIndex++)
             {
-                console.log("Query string attuale: ", queryStr);
-                if (allowedFilters[key].includes(queryStr))
+                if (allowedFilters[key].includes(queryKeys[queryIndex]))
                 {
-                    if (EventModel.isValidProperty(key, correctedQV[index]))
-                        validQueries[key] = [queryStr, correctedQV[index]];
-                    queriesToBeRemoved.push(queryStr);
+                    queriesToRemove.push(queryIndex);
+                    if (EventModel.isValidProperty(key, queryValues[queryIndex]))
+                        validQueries[key] = [queryKeys[queryIndex], queryValues[queryIndex]];
                 }
-                console.log("Valid queries: ", validQueries);
-            });
-        console.log("Queries da rimuovere: ", queriesToBeRemoved);
-        queriesToBeRemoved.forEach( queryToRemove   =>
-            {
-                queries.splice(queries.indexOf(queryToRemove), 1);
-            });
-        console.log("Queries dopo pulizia: ", queries);
+            }
+            queriesToRemove.forEach( queryIndexForRemoval   =>
+                {
+                    queryKeys.splice(queryIndexForRemoval, 1);
+                    queryValues.splice(queryIndexForRemoval, 1);
+                });
+        }
     }
-    console.log("Valid queries finali: ", validQueries);
-    console.log("Queries residue: ", queries);
     return validQueries;
 }
 
+// // Funzione incaricata di filtrare le sole query valide (riscontrabili nell'oggetto "allowedFilters") e di mantenere, per le stesse, solo un valore, l'ultimo.
+// function getValidQueries(request)
+// {
+//     console.log("*******************************************");
+//     console.log("*******************************************");    
+//     console.log("*******************************************");
+//     console.log("Funzione getValidQueries");
+//     console.log("*******************************************");
+//     console.log("*******************************************");    
+//     console.log("*******************************************");
+//     // Si acquisiscono tutte le queries dalla request
+//     let queries         =   Object.keys(request.query);
+//     // Si acquisiscono tutti i valori delle queries dalla request
+//     let queriesValues   =   Object.values(request.query);
+//     // Una query potrebbe anche essere associata a più valori (in array), ragion per cui le si filtra (corregge) mantenendo un unico valore, l'ultimo
+//     let correctedQV     =   queriesValues.map( singleQV =>
+//         {
+//             switch (typeof singleQV)
+//             {
+//                 case "string"   :   return singleQV;
+//                 case "object"   :   if (Array.isArray(singleQV))
+//                                         return singleQV[singleQV.length - 1];
+//                                     else
+//                                         throw new Error("Query invalida!");
+//                 default         :   throw new Error("Query invalida!");
+//             }
+//         }); 
+//     // console.log("Tutte le queries da request: ", request.query);
+//     // console.log("Tutte le queries: ", queries,);
+//     console.log("Tutte le queries.......", queries);
+//     console.log("Tutti i valori grezzi delle queries......", queriesValues);
+//     console.log("Tutti i valori corretti delle queries......", correctedQV);
+//     // Se non ci sono queries si ritorna un oggetto vuoto
+//     if (queries.length == 0)
+//         return {};
+//     // Altrimenti si procede con il filtraggio
+//     // validQueries (oggetto), se non vuoto, conterrà tante chiavi quante sono le chiavi
+//     let validQueries    =   {};
+//     for (let key in allowedFilters)
+//     {
+//         // var queriesToBeRemoved = [];
+//         console.log("Key attuale: ", key);
+//         queries.forEach( (queryStr, index)    =>
+//             {
+//                 console.log("Query string attuale: ", queryStr);
+//                 if (allowedFilters[key].includes(queryStr))
+//                 {
+//                     if (EventModel.isValidProperty(key, correctedQV[index]))
+//                         validQueries[key] = [queryStr, correctedQV[index]];
+//                     // queriesToBeRemoved.push(queryStr);
+//                 }
+//                 console.log("Valid queries: ", validQueries);
+//             });
+//         // console.log("Queries da rimuovere: ", queriesToBeRemoved);
+//         // queriesToBeRemoved.forEach( queryToRemove   =>
+//         //     {
+//         //         queries.splice(queries.indexOf(queryToRemove), 1);
+//         //     });
+//         // console.log("Queries dopo pulizia: ", queries);
+//     }
+//     console.log("Valid queries finali: ", validQueries);
+//     // console.log("Queries residue: ", queries);
+//     return validQueries;
+// }
+
 function applyFilters(filters, filtersAmount, arrayToFilter)
 {
+    // console.log("Inizio funzione....valori di filters: ", filters);
     const filteredEvents = arrayToFilter.filter( eventToBeFiltered =>
         {
+            // console.log("Evento corrente: ", eventToBeFiltered);
             let filtersMatched = 0;
             for (let key in filters)
             {
                 const   functionToCall  =   filters[key][0];
                 const   datafromQuery   =   filters[key][1];
                 const   dataFromEvent   =   eventToBeFiltered[key];
-                if (filterFunctions.hasOwnProperty(functionToCall))
-                {
+                // console.log("key: ", key);
+                // console.log("Funzione da chiamare: ", functionToCall);
+                // console.log("Dati dalla query: ", datafromQuery);
+                // console.log("Dati dall'evento: ", dataFromEvent);
+                // if (filterFunctions.hasOwnProperty(functionToCall))
+                // {
                     const filteringResult = filterFunctions[functionToCall](dataFromEvent, datafromQuery);
                     if (filteringResult)
                         filtersMatched++;
-                }
+                // }
             }
             return (filtersMatched == filtersAmount);
         });
+    // console.log("eventi filtrati nella funzione: ", filteredEvents);
     return filteredEvents;
 }
 
@@ -163,10 +236,13 @@ function index(request, response)
     if (eventsInDB != 0)
     {
         var     validQueries    =   getValidQueries(request);
-        const   queriesAmount   =   Object.keys(validQueries).length;
+        var     queriesAmount   =   Object.keys(validQueries).length;
         var     allEvents       =   EventModel.getAllEvents();
+        // console.log("queries valide: ", validQueries);
+        // console.log("nr di queries: ", queriesAmount);
         if (queriesAmount != 0)
             allEvents = applyFilters(validQueries, queriesAmount, allEvents);
+        // console.log("eventi filtrati: ", allEvents);
     }
     // showAllEventsInstances();
     response.format({
@@ -177,6 +253,12 @@ function index(request, response)
                                     response.send("<h1>Non ci sono eventi nel database.</h1>");
                                 else
                                 {
+                                    let filterMsg = [];
+                                    if (queriesAmount != 0)
+                                    {
+                                        filterMsg.push('<h1 style="color:blue;">Filtri applicati:</h1>');
+                                        filterMsg.push(``)
+                                    }
                                     let output = ["<ul>"];
                                     allEvents.forEach( singleEvent  =>
                                         {
@@ -196,7 +278,7 @@ function index(request, response)
                                             output.push("</li>");
                                         });
                                     output.push("</ul>");
-                                    response.send(output.join(""));
+                                    response.send(filterMsg.join("").concat(output.join("")));
                                 }
                             },
                         default:    ()  =>
@@ -212,7 +294,7 @@ function index(request, response)
 function show(request, response)
 {
     const actualEvent   = EventModel.getEvent(request.params.event);
-    showAllEventsInstances();
+    // showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {
@@ -245,7 +327,7 @@ function store(request, response)
     const newEvent                                  =   new EventModel(title, description, eventDate, maxSeats);
     const newEventId                                =   EventModel.getLastGeneratedId();
     const newEventConfirmed                         =   EventModel.getEvent(newEventId);
-    showAllEventsInstances();
+    // showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {
@@ -305,7 +387,7 @@ function update(request, response)
     let     eventAfterModify                            =   EventModel.getEvent(eventId);
     delete eventBeforeModify.id;
     delete eventAfterModify.id;
-    showAllEventsInstances();
+    // showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {
@@ -337,7 +419,7 @@ function destroy(request, response)
     const   eventId         =   request.params.event;
     const   eventToDelete   =   EventModel.getEvent(eventId);
     EventModel.deleteEvent(eventId);
-    showAllEventsInstances();
+    // showAllEventsInstances();
     response.format({
                         html:       ()  =>
                             {

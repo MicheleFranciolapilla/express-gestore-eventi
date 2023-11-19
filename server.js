@@ -1,17 +1,21 @@
 // Importazione librerie
-const   dotenv              =   require("dotenv").config();
-const   express             =   require("express");
+const   dotenv                  =   require("dotenv").config();
+const   express                 =   require("express");
 
 // Importazione controllers
-const   homePageController  =   require("./controllers/homePageController");
+const   homePageController      =   require("./controllers/homePageController");
 
 // Importazione routers
-const   routerEvents        =   require("./routers/routerEvents");
+const   routerEvents            =   require("./routers/routerEvents");
 
-const   port                =   process.env.PORT || 8080;
+// Importazione middlewares
+const   middlewareRouteNotFound =   require("./middlewares/middlewareRouteNotFound");
+const   middlewareErrorHandling =   require("./middlewares/middlewareErrorHandling");
+
+const   port                    =   process.env.PORT || 8080;
 
 // Inizializzazione server
-const   server              =   express();
+const   server                  =   express();
         // Configurazione middleware per files statici
         server.use(express.static("public"));
         // Configurazione middlewares per i body parsers
@@ -20,6 +24,10 @@ const   server              =   express();
         // Definizione rotte
         server.get("/", homePageController);
         server.use("/events", routerEvents);
+        // Configurazione middleware per "Route not found"
+        server.use(middlewareRouteNotFound);
+        // Configurazione middleware per gestione errori
+        server.use(middlewareErrorHandling);
 
         server.listen( port, () =>
         {

@@ -248,7 +248,7 @@ function index(request, response)
                                         };
                                         firstMessage.Filtri = [filterMsg, filtersArray];
                                     }
-                                let jsonResponse = { "Totale eventi" : eventsInDB};
+                                let jsonResponse = { "Totale eventi" : allEvents.length};
                                 if (eventsInDB != 0)
                                     jsonResponse.Eventi = allEvents;
                                 response.json([firstMessage, jsonResponse]);
